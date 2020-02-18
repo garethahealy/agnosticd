@@ -34,3 +34,26 @@
 - name: Check BusinessCentral is running
   command: >
     oc rollout status DeploymentConfig/rhpam-authoring-rhpamcentr --watch=true -n "{{ _namespace }}"
+
+- name: get business centranl url
+  command: >
+    oc get kieapp/rhpam-authoring  -o jsonpath='{.status.consoleHost}'
+  register: businesscentral_host
+
+- name: Clone pam project 1
+  uri:
+    url: "{{ businesscentral_host.stdout  }}/rest/spaces/MySpace/git/clone"
+    method: POST
+    return_content: yes
+    headers:
+      Content-Type: "application/json"
+    body: '{"name": "proactive-fraud-detection-case", "description": "proactive-fraud-detection-case", "gitURL": "https://gitlab.com/ba-demos/proactive-fraud-detection/proactive-fraud-detection-case.git"}'
+    body_format: json
+    validate_certs: no
+    status_code: 200,201,202,204
+    user: "rhpamAdmin"
+    password: "rhadminpassword123!"
+    force_basic_auth: true
+  register: clone_result
+
+- debug: var=clone_result

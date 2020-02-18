@@ -4,3 +4,10 @@ metadata:
   name: rhpam-authoring
 spec:
   environment: rhpam-authoring
+  objects:
+    console:
+      env:
+        - name: KIE_ADMIN_USER
+          value: "rhpamAdmin"
+        - name: KIE_ADMIN_PWD
+          value: "rhadminpassword123!"
