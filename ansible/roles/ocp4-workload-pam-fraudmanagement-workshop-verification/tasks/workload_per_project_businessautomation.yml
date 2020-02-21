@@ -14,3 +14,22 @@
 - name: Check BusinessCentral is running
   command: >
     oc rollout status DeploymentConfig/rhpam-authoring-rhpamcentr --watch=true -n "{{ _namespace }}"
+
+- name: Get Business Central route host
+  command: >
+    oc get route/rhpam-authoring-rhpamcentr -o jsonpath='{.spec.host}' -n "{{ _namespace }}"
+  register: businesscentral_host
+  retries: "{{ _retry }}"
+  delay: "{{ _delay }}"
+  until: businesscentral_host.stdout != ""
+
+- name: Wait for Business Central route to respond with 200
+  uri:
+    url: "https://{{ businesscentral_host.stdout }}"
+    method: GET
+    validate_certs: false
+    follow_redirects: yes
+  register: bizcentralresult
+  retries: "{{ _retry }}"
+  delay: "{{ _delay }}"
+  until: bizcentralresult.status == 200

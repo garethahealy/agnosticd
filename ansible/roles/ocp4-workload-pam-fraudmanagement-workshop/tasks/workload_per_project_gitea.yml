@@ -41,6 +41,17 @@
   register: gitea_pam_project
   ignore_errors: true
 
+- name: Check if gitea pam-fraudmanagement-case project already exists (note; error can be ignored)
+  uri:
+    url: "https://{{ gitea_route.stdout }}/api/v1/repos/{{ _namespace }}/pam-fraudmanagement-case"
+    method: GET
+    validate_certs: false
+    user: "{{ _namespace }}"
+    password: "{{ _account_password }}"
+    force_basic_auth: true
+  register: gitea_pam_case_project
+  ignore_errors: true
+
 - name: Get gitea user info
   uri:
     url: "https://{{ gitea_route.stdout }}/api/v1/users/{{ _namespace }}"
@@ -66,8 +77,28 @@
   when: gitea_pam_project.status == 404
   vars:
     body: '{
-      "clone_addr": "https://github.com/RedHat-Consulting-UK/summit-2020-pam-fraudmanagement.git",
+      "clone_addr": "https://gitlab.com/2020-summit-labs/summit-2020-pam-fraudmanagement.git",
       "description": "Proactive Fraud Management with Case Management, Kafka and DMN Services",
       "repo_name": "pam-fraudmanagement",
+      "uid": {{ gitea_insystem_user.json.id | int }}
+    }'
+
+- name: Deploy pam-fraudmanagement-case into gitea
+  uri:
+    url: "https://{{ gitea_route.stdout }}/api/v1/repos/migrate"
+    method: POST
+    body: "{{ body }}"
+    status_code: 201
+    body_format: json
+    validate_certs: false
+    user: "{{ _namespace }}"
+    password: "{{ _account_password }}"
+    force_basic_auth: true
+  when: gitea_pam_case_project.status == 404
+  vars:
+    body: '{
+      "clone_addr": "https://gitlab.com/ba-demos/proactive-fraud-detection/proactive-fraud-detection-case.git",
+      "description": "Demo of the case management capabilities of Red Hat Process Automation Manager.",
+      "repo_name": "pam-fraudmanagement-case",
       "uid": {{ gitea_insystem_user.json.id | int }}
     }'
