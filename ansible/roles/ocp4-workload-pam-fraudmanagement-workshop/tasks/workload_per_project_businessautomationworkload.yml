@@ -166,3 +166,63 @@
   retries: "{{ _retry }}"
   delay: "{{ _delay }}"
   until: bizcentraldeploy_job.json.status == "SUCCESS"
+
+- name: Delete KIE Container proactive-fraud-detection-case (note; error can be ignored)
+  uri:
+    url: "https://{{ businesscentral_host.stdout }}/rest/controller/management/servers/{{ srvId }}/containers/{{ containerName }}"
+    method: DELETE
+    validate_certs: false
+    follow_redirects: yes
+    user: "{{ _namespace }}"
+    password: "{{ _account_password }}"
+    force_basic_auth: true
+    status_code: 200
+  register: bizcentraldeploy
+  ignore_errors: true
+  retries: "{{ _retry }}"
+  delay: "{{ _delay }}"
+  until: bizcentraldeploy.status == 200
+  vars:
+    srvId: kie-server-id
+    containerName: proactive-fraud-detection-case
+
+- name: Create KIE Container proactive-fraud-detection-case
+  uri:
+    url: "https://{{ businesscentral_host.stdout }}/rest/controller/management/servers/{{ srvId }}/containers/{{ containerId }}"
+    method: PUT
+    body: "{{ body }}"
+    body_format: json
+    validate_certs: false
+    follow_redirects: yes
+    user: "{{ _namespace }}"
+    password: "{{ _account_password }}"
+    force_basic_auth: true
+    status_code: 201
+  register: bizcentralclone
+  retries: "{{ _retry }}"
+  delay: "{{ _delay }}"
+  until: bizcentralclone.status == 201
+  when: bizcentralproject.status == 404
+  vars:
+    srvId: kie-server-id
+    containerId: proactive-fraud-detection-case
+    body:
+      container-id: "proactive-fraud-detection-case"
+      container-name: "proactive-fraud-detection-case"
+      server-template-key : null
+      status: "STARTED"
+      release-id:
+        group-id: "{{ kjar_group_id }}"
+        artifact-id: "kjar_artefact_id"
+        vesrion: "{{ kjar_version }}"
+      configuration:
+        'RULE':
+          'org.kie.server.controller.api.model.spec.RuleConfig':
+            'pollInterval': null
+            'scannerStatus': "STOPPED"
+        'PROCESS':
+          'org.kie.server.controller.api.model.spec.ProcessConfig':
+            'runtimeStrategy': "SINGLETON"
+            kbase: ''
+            ksession: ''
+            'mergeMode': "MERGE_COLLECTIONS"
