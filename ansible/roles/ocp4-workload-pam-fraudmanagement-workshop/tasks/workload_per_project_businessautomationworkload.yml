@@ -210,7 +210,7 @@
       release-id:
         group-id: "{{ _kjar_group_id }}"
         artifact-id: "{{ _kjar_artefact_id }}"
-        vesrion: "{{ _kjar_version }}"
+        version: "{{ _kjar_version }}"
       configuration:
         'RULE':
           'org.kie.server.controller.api.model.spec.RuleConfig':
