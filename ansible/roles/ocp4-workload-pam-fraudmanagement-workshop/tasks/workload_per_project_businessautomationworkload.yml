@@ -169,7 +169,7 @@
 
 - name: Delete KIE Container proactive-fraud-detection-case (note; error can be ignored)
   uri:
-    url: "https://{{ businesscentral_host.stdout }}/rest/controller/management/servers/{{ srvId }}/containers/{{ containerName }}"
+    url: "https://{{ businesscentral_host.stdout }}/rest/controller/management/servers/{{ srvId }}/containers/{{ containerId }}"
     method: DELETE
     validate_certs: false
     follow_redirects: yes
@@ -183,8 +183,8 @@
   delay: "{{ _delay }}"
   until: bizcentraldeploy.status == 200
   vars:
-    srvId: kie-server-id
-    containerName: proactive-fraud-detection-case
+    srvId: '{{ kie_server_id }}'
+    containerId: '{{ kie_container_id }}'
 
 - name: Create KIE Container proactive-fraud-detection-case
   uri:
@@ -204,12 +204,13 @@
   until: bizcentralclone.status == 201
   when: bizcentralproject.status == 404
   vars:
-    srvId: kie-server-id
-    containerId: proactive-fraud-detection-case
+    srvId: '{{ kie_server_id }}'
+    containerId: '{{ kie_container_id }}'
     body:
-      container-id: "proactive-fraud-detection-case"
-      container-name: "proactive-fraud-detection-case"
-      server-template-key : null
+      container-id: "{{ kie_container_id }}"
+      container-name: "{{ kie_container_id }}"
+      server-template-key :
+        server-id: '{{ kie_server_id }}'
       status: "STARTED"
       release-id:
         group-id: "{{ kjar_group_id }}"
